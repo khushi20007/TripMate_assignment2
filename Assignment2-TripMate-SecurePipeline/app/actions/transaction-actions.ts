@@ -1,0 +1,4 @@
+"use server";
+import {z} from "zod"; import {prisma} from "@/lib/prisma"; import {requireSession} from "@/lib/authorization";
+const schema=z.object({type:z.enum(["TRIP_BOOKING","REFUND","PAYMENT"]),amount:z.number().positive()});
+export async function createTransactionAction(input:unknown){const {session}=await requireSession(["admin","member"]);const data=schema.parse(input);return prisma.$transaction(async tx=>{const created=await tx.transaction.create({data:{id:crypto.randomUUID(),userId:session.user.id,type:data.type,amount:data.amount,status:"SUCCESS",reference:`TXN-${crypto.randomUUID().slice(0,8).toUpperCase()}`,createdAt:new Date(),updatedAt:new Date()}});await tx.auditLog.create({data:{id:crypto.randomUUID(),userId:session.user.id,transactionId:created.id,action:"SERVER_ACTION_TRANSACTION_CREATED",createdAt:new Date()}});return {id:created.id,reference:created.reference}})}

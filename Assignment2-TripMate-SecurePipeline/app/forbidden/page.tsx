@@ -1,0 +1,1 @@
+export default function Forbidden(){return <main className="shell narrow"><section className="card"><h1>403 – Forbidden</h1><p>Your authenticated role does not have permission to access this route.</p></section></main>}
